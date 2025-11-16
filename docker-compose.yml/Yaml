@@ -1,0 +1,85 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pit_loja
+      MYSQL_USER: pituser
+      MYSQL_PASSWORD: pitpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  auth_service:
+    build: ./auth_service
+    container_name: auth_service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+
+  product_service:
+    build: ./product_service
+    container_name: product_service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+
+  order_service:
+    build: ./order_service
+    container_name: order_service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+
+  delivery_service:
+    build: ./delivery_service
+    container_name: delivery_service
+    ports:
+      - "5004:5004"
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+
+  payment_service:
+    build: ./payment_service
+    container_name: payment_service
+    ports:
+      - "5005:5005"
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth_service
+      - product_service
+      - order_service
+      - delivery_service
+      - payment_service
+    environment:
+      FLASK_ENV: development
+
+volumes:
+  db_data:
